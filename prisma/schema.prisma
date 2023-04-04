@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id           String    @id @default(uuid())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  name         String
+  email        String    @unique
+  avatar       String?
+  role         Role
+  points       Int       @default(0)
+  meetingCount Int       @default(0)
+  offerCount   Int       @default(0)
+  saleCount    Int       @default(0)
+  level        Int       @default(1)
+  index        Int       @unique @default(autoincrement())
+  bookingCount Int       @default(0)
+  bookingGoal  Int       @default(1)
+  meetingGoal  Int       @default(1)
+  offerGoal    Int       @default(1)
+  saleGoal     Int       @default(1)
+  active       Boolean   @default(true)
+  booking      Booking[]
+  meeting      Meeting[]
+  offer        Offer[]
+  sale         Sale[]
+}
+
+model Booking {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  date      String
+  time      String
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Meeting {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  date      String
+  time      String
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Offer {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  date      String
+  amount    Int
+  profileId String
+  time      String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Sale {
+  id        String            @id @default(uuid())
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  name      String
+  date      String
+  amount    Int
+  invoice   String
+  revenue   Int
+  profileId String
+  time      String
+  index     Int               @unique @default(autoincrement())
+  customer  Customer?
+  profile   Profile           @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  services  ServicesOnSales[]
+}
+
+model Service {
+  id        Int               @id @default(autoincrement())
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  name      String
+  provision String
+  sales     ServicesOnSales[]
+}
+
+model ServicesOnSales {
+  saleId       Int
+  serviceId    Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  subscription String
+  sale         Sale     @relation(fields: [saleId], references: [index], onDelete: Cascade)
+  service      Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([saleId, serviceId])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Customer {
+  NEW
+  REPEAT
+}
